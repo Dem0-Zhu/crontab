@@ -1,0 +1,15 @@
+{  "API接口服务端口": "供增删改查服务",
+  "api_port": 8070,
+
+  "读超时": "毫秒",
+  "api_read_timeout": 5000,
+
+  "写超时": "毫秒",
+  "api_write_timeout": 5000,
+
+  "etcd_hosts": ["192.168.5.12:2379"],
+  "etcd_dial_timeout": 5000,
+
+  "web页面根目录": "静态页面",
+  "webroot": "./webroot"
+}
