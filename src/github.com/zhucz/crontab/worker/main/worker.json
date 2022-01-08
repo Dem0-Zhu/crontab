@@ -1,0 +1,4 @@
+{
+  "etcd_hosts": ["192.168.5.12:2379"],
+  "etcd_dial_timeout": 5000
+}
