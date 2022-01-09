@@ -6,4 +6,5 @@ const (
 	JobLockDir = "/cron/lock/"
 	JobEventPut = 1
 	JobEventDelete = 2
+	JobEventKiller = 3
 )

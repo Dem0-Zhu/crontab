@@ -49,8 +49,10 @@ func InitJobMgr() (err error) {
 		watcher: watcher,
 	}
 
+	// 启动任务监听
 	G_jobMgr.watchJobs()
-
+	// 启动监听killer
+	G_jobMgr.watchKiller()
 	return
 }
 
@@ -111,6 +113,33 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 	}()
 
 	return nil
+}
+
+func (jobMgr *JobMgr) watchKiller()  {
+	var (
+		watchChan clientv3.WatchChan
+		watchResp clientv3.WatchResponse
+		watchEvent *clientv3.Event
+	)
+	// 监听/cron/killer/
+	go func() { // 监听协程
+		watchChan = jobMgr.watcher.Watch(context.TODO(),common.JobKillerDir, clientv3.WithPrefix())
+		for watchResp = range watchChan {
+			// 每个watchResp有可能包含多个Event
+			for _, watchEvent = range watchResp.Events {
+				switch watchEvent.Type {
+				case mvccpb.PUT:
+					jobName := common.ExtractKillerName(string(watchEvent.Kv.Key))
+					job := &common.Job{Name: jobName}
+					jobEvent := common.BuildJobEvent(common.JobEventKiller, job)
+					// 把变化推送给scheduler
+					GScheduler.PushJobEvent(jobEvent)
+				case mvccpb.DELETE:
+				}
+			}
+		}
+	}()
+
 }
 
 // CreatJobLock 创建任务执行锁

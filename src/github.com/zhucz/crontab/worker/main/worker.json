@@ -1,4 +1,9 @@
 {
   "etcd_hosts": ["192.168.5.12:2379"],
-  "etcd_dial_timeout": 5000
+  "etcd_dial_timeout": 5000,
+
+  "mongodb_uri": "192.168.5.12:27017",
+  "mongodb_connect_timeout": 5000,
+
+  "job_log_batch_size": 100
 }

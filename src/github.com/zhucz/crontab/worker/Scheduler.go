@@ -36,6 +36,11 @@ func (scheduler *Scheduler) HandleJobEvent(jobEvent *common.JobEvent) {
 		if _, ok := GScheduler.jobPlanTable[jobEvent.Job.Name]; ok {
 			delete(GScheduler.jobPlanTable, jobEvent.Job.Name)
 		}
+	case common.JobEventKiller: // 强杀任务事件
+		// 取消掉command执行
+		if _, ok := GScheduler.jobExecutingTable[jobEvent.Job.Name]; ok {
+			GScheduler.jobExecutingTable[jobEvent.Job.Name].CancelFunc()
+		}
 	}
 }
 
@@ -44,7 +49,25 @@ func (scheduler *Scheduler) HandleJobResult(jobResult *common.JobExecuteResult) 
 	if _, ok := scheduler.jobExecutingTable[jobResult.ExecuteInfo.Job.Name]; ok {
 		delete(scheduler.jobExecutingTable, jobResult.ExecuteInfo.Job.Name)
 	}
+	// 生成执行日志
+	if jobResult.Err != common.ErrLockAlreadyRequired {
+		jobLog := &common.JobLog{
+			JobName: jobResult.ExecuteInfo.Job.Name,
+			Command: jobResult.ExecuteInfo.Job.Command,
+			Output: string(jobResult.Output),
+			PlanTime: jobResult.ExecuteInfo.PlanTime.UnixNano() / 1000 / 1000, // 毫秒
+			ScheduleTime: jobResult.ExecuteInfo.RealTime.UnixNano() / 1000 / 1000,
+			StartTime: jobResult.StartTime.UnixNano() / 1000 / 1000,
+			EndTime: jobResult.EndTime.UnixNano() / 1000 / 1000,
+		}
+		if jobResult.Err != nil {
+			jobLog.Err = jobResult.Err.Error()
+		} else {
+			jobLog.Err = ""
+		}
 
+
+	}
 	fmt.Println("任务执行完成：", jobResult.ExecuteInfo.Job.Name, string(jobResult.Output), jobResult.StartTime, jobResult.EndTime, jobResult.Err)
 }
 
@@ -76,11 +99,9 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 	now := time.Now()
 	for _, jobPlan := range scheduler.jobPlanTable {
 		if jobPlan.NextTime.Before(now) || jobPlan.NextTime.Equal(now) {
-			// todo: 尝试执行任务
 			scheduler.TryStartJob(jobPlan)
 			jobPlan.NextTime = jobPlan.Expr.Next(now)
 		}
-
 		// 正常情况需要轮训遍历planTable， 这边加了一个小优化
 		// 统计最近一个要过期的任务
 		if nearTime == nil || jobPlan.NextTime.Before(*nearTime) {

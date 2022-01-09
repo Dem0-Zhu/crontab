@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"context"
+	"math/rand"
 	"os/exec"
 	"task_scheduler/src/github.com/zhucz/crontab/common"
 	"time"
@@ -26,6 +26,8 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 
 		startTime := time.Now()
 
+		// 随机睡眠0~1s, 尽量让所有的worker都有机会抢到锁
+		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 		err = jobLock.TryLock()
 		defer jobLock.UnLock()
 
@@ -39,7 +41,7 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 		} else {
 			startTime = time.Now()
 			// 执行shell命令
-			cmd := exec.CommandContext(context.TODO(), "C:\\Windows\\System32\\bash.exe", "-c", info.Job.Command)
+			cmd := exec.CommandContext(info.CancelCtx, "C:\\Windows\\System32\\bash.exe", "-c", info.Job.Command)
 			// 执行并捕获输出
 			output, err = cmd.CombinedOutput()
 			endTime := time.Now()

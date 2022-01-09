@@ -15,6 +15,9 @@ var (
 type Config struct {
 	EtcdHosts       []string `json:"etcd_hosts"`
 	EtcdDialTimeout int      `json:"etcd_dial_timeout"`
+	MongodbUri string `json:"mongodb_uri"`
+	MongodbConnectTimeout int `json:"mongodb_connect_timeout"`
+	JobLogBatchSize int `json:"job_log_batch_size"`
 }
 
 func InitConfig(fileName string) (err error) {
