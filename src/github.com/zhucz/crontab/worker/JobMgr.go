@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"task_scheduler/src/github.com/zhucz/crontab/common"
@@ -76,8 +75,8 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 		// 反序列化json得到job
 		if job, err = common.UnpackJob(kvPair.Value); err == nil {
 			jobEvent = common.BuildJobEvent(common.JobEventPut, job)
-			// todo:把这个job同步给调度协程（scheduler）
-			fmt.Println("当前任务：", jobEvent)
+			// 同步给调度协程（scheduler）
+			GScheduler.PushJobEvent(jobEvent)
 		}
 	}
 
@@ -92,6 +91,7 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 			for _, watchEvent = range watchResp.Events {
 				switch watchEvent.Type {
 				case mvccpb.PUT:
+					// 更新
 					if job, err = common.UnpackJob(watchEvent.Kv.Value); err != nil {
 						continue
 					}
@@ -103,8 +103,8 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 					//构造一个Event事件
 					jobEvent = common.BuildJobEvent(common.JobEventDelete, &common.Job{Name:jobName})
 				}
-				// todo: 推送一个删除事件给scheduler
-				fmt.Println("监听变化：", jobEvent)
+				// 把变化推送给scheduler
+				GScheduler.PushJobEvent(jobEvent)
 
 			}
 		}
