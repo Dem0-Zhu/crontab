@@ -5,5 +5,6 @@
   "mongodb_uri": "192.168.5.12:27017",
   "mongodb_connect_timeout": 5000,
 
-  "job_log_batch_size": 100
+  "job_log_batch_size": 100,
+  "job_log_commit_timeout": 1000
 }

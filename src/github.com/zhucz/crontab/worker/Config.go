@@ -18,6 +18,7 @@ type Config struct {
 	MongodbUri string `json:"mongodb_uri"`
 	MongodbConnectTimeout int `json:"mongodb_connect_timeout"`
 	JobLogBatchSize int `json:"job_log_batch_size"`
+	JobLogCommitTimeout int `json:"job_log_commit_timeout"`
 }
 
 func InitConfig(fileName string) (err error) {

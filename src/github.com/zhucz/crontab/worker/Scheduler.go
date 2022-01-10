@@ -65,7 +65,7 @@ func (scheduler *Scheduler) HandleJobResult(jobResult *common.JobExecuteResult) 
 		} else {
 			jobLog.Err = ""
 		}
-
+	GLogsink.Append(jobLog)
 
 	}
 	fmt.Println("任务执行完成：", jobResult.ExecuteInfo.Job.Name, string(jobResult.Output), jobResult.StartTime, jobResult.EndTime, jobResult.Err)
