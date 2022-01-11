@@ -150,6 +150,39 @@ ERR:
 		resp.Write(result)
 	}
 }
+// GET job/log?name=xxx&skip=1&limit=1
+func handleJobLog(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err error
+		result []byte
+		name string
+		skip int
+		limit int
+		logArr []*common.JobLog
+	)
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+	name = req.Form.Get("name")
+	if skip, err  = strconv.Atoi(req.Form.Get("skip")); err != nil {
+		skip = 0
+	}
+	if limit, err = strconv.Atoi(req.Form.Get("limit")); err != nil {
+		limit = 10
+	}
+	if logArr, err = G_logMgr.ListLog(name, int64(skip), int64(limit)); err != nil {
+		goto ERR
+	}
+	if result, err = common.BuildResponse(0, "success", logArr); err == nil {
+		resp.Write(result)
+	}
+	return
+
+ERR:
+	if result, err = common.BuildResponse(-1, "fail", nil); err == nil {
+		resp.Write(result)
+	}
+}
 
 // InitApiServer 初始化服务
 func InitApiServer() (err error) {
@@ -167,6 +200,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
+	mux.HandleFunc("/job/log", handleJobLog)
 
 	staticDir = http.Dir(G_config.WebRoot)
 	staticHandle = http.FileServer(staticDir)

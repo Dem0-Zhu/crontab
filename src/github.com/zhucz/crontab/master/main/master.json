@@ -11,5 +11,8 @@
   "etcd_dial_timeout": 5000,
 
   "web页面根目录": "静态页面",
-  "webroot": "./webroot"
+  "webroot": "./webroot",
+
+  "mongodb_uri": "192.168.5.12:27017",
+  "mongodb_connect_timeout": 5000
 }

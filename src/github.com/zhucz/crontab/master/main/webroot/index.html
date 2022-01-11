@@ -52,7 +52,7 @@
     </div>
 
 
-    <div id="edit-model" class="modal fade" tabindex="-1" role="dialog">
+    <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -82,9 +82,64 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    <!--日志模态框-->
+    <div id="log-modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">任务日志</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="log-list" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>shell命令</th>
+                            <th>错误原因</th>
+                            <th>输出</th>
+                            <th>计划开始时间</th>
+                            <th>实际调度时间</th>
+                            <th>开始执行时间</th>
+                            <th>执行结束时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <script>
     // 页面加载完成，回调函数
     $(document).ready(function() {
+        // 工具函数 时间转换
+        function timeFormat(millsecond) {
+            // 前缀补零
+            function paddingNum(num, n) {
+                var len = num.toString().length
+                while (len < n) {
+                    num = '0' + num
+                    len++
+                }
+                return num
+            }
+            var date = new Date(millsecond)
+            var year = date.getFullYear()
+            var month = paddingNum(date.getMonth() + 1, 2)
+            var day = paddingNum(date.getDay(), 2)
+            var hour = paddingNum(date.getHours(), 2)
+            var minute = paddingNum(date.getMinutes(), 2)
+            var second = paddingNum(date.getSeconds(), 2)
+            var millisecond = paddingNum(date.getMilliseconds(), 3)
+            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second + "." + millisecond
+        }
+
         // 1.绑定按钮的事件处理函数
         // 使用js的委托机制，DOM事件冒泡的一个关键原理
         $("#job-list").on("click", ".edit-job", function (event) {
@@ -93,7 +148,7 @@
             $('#edit-command').val($(this).parents("tr").children(".job-command").text())
             $('#edit-cronExpr').val($(this).parents("tr").children(".job-cronExpr").text())
             // 弹出
-            $('#edit-model').modal('show')
+            $('#edit-modal').modal('show')
         })
         $("#job-list").on("click", ".delete-job", function (event) {
             var jobName = $(this).parents("tr").children(".job-name").text()
@@ -131,13 +186,47 @@
                 }
             })
         })
+        $("#job-list").on("click", ".log-job", function (event) {
+            // 清空列表
+            $('#log-list tbody').empty()
+            var jobName = $(this).parents("tr").children(".job-name").text()
+            $.ajax({
+                url: '/job/log',
+                type: 'get',
+                dataType: 'json',
+                data: {name: jobName},
+                success:function (resp) {
+                    if (resp.errno != 0) {
+                        return
+                    }
+                    // 遍历日志
+                    for (var dataKey in resp.data) {
+                        var log = resp.data[dataKey]
+                        //console.log(job, dataKey)
+                        var tr = $("<tr>")
+                        tr.append($('<td>').html(log.command))
+                        tr.append($('<td>').html(log.err))
+                        tr.append($('<td>').html(log.output))
+                        tr.append($('<td>').html(timeFormat(log.plan_time)))
+                        tr.append($('<td>').html(timeFormat(log.schedule_time)))
+                        tr.append($('<td>').html(timeFormat(log.start_time)))
+                        tr.append($('<td>').html(timeFormat(log.end_time)))
+                        console.log(tr)
+                        $("#log-list tbody").append(tr)
+                    }
+
+                }
+            })
+            $('#log-modal').modal('show')
+        })
 
         $('#new-job').on("click", function (){
+            console.log("new job")
             $('#edit-name').val("")
             $('#edit-command').val("")
             $('#edit-cronExpr').val("")
-            $('#edit-model').modal("show")
             $("#edit-name").attr("readOnly",false)
+            $('#edit-modal').modal("show")
         })
 
         // 2.定义一个函数，用于刷新job列表
@@ -154,7 +243,7 @@
                     $('#job-list tbody').empty()
                     for (var dataKey in resp.data) {
                         var job = resp.data[dataKey]
-                        console.log(job, dataKey)
+                        // console.log(job, dataKey)
                         var tr = $("<tr>")
                         tr.append($('<td class="job-name">').html(job.name))
                         tr.append($('<td class="job-command">').html(job.command))
@@ -163,6 +252,7 @@
                             .append('<button class="btn btn-info edit-job">编辑</button>')
                             .append('<button class="btn btn-danger delete-job">删除</button>')
                             .append('<button class="btn btn-warning kill-job">强杀</button>')
+                            .append('<button class="btn btn-success log-job">日志</button>')
                         tr.append($('<td>')).append(toolbar)
                         $("#job-list tbody").append(tr)
                     }
