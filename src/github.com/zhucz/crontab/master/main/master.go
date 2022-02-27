@@ -55,7 +55,7 @@ func main() {
 		goto ERR
 	}
 
-	for {}
+	select {}
 
 	return
 
