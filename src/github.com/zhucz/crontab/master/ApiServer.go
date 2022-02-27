@@ -184,6 +184,26 @@ ERR:
 	}
 }
 
+// 获取健康worker节点列表
+func handleWorkerList(resp http.ResponseWriter, res *http.Request)  {
+	var (
+		workerArr []string
+		err error
+		result []byte
+	)
+	if workerArr, err = G_workerMgr.ListWorkers(); err != nil {
+		goto ERR
+	}
+	if result, err = common.BuildResponse(0, "success", workerArr); err == nil {
+		resp.Write(result)
+	}
+	return
+ERR:
+	if result, err = common.BuildResponse(-1, "fail", nil); err == nil {
+		resp.Write(result)
+	}
+}
+
 // InitApiServer 初始化服务
 func InitApiServer() (err error) {
 	// 配置路由
@@ -201,6 +221,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
 	mux.HandleFunc("/job/log", handleJobLog)
+	mux.HandleFunc("/worker/list", handleWorkerList)
 
 	staticDir = http.Dir(G_config.WebRoot)
 	staticHandle = http.FileServer(staticDir)

@@ -147,3 +147,8 @@ func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobE
 	jobExecuteInfo.CancelCtx, jobExecuteInfo.CancelFunc = context.WithCancel(context.TODO())
 	return
 }
+
+// 从key中获取ip
+func ExtractWorkerIP(key string) string {
+	return strings.TrimPrefix(key, JobWorkerDir)
+}

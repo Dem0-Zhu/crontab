@@ -24,6 +24,7 @@
         <div class="row">
             <div class="col-md-12">
                 <button type="button" class="btn btn-primary" id="new-job">新建任务</button>
+                <button type="button" class="btn btn-success" id="list-worker">健康节点</button>
             </div>
         </div>
 
@@ -66,11 +67,11 @@
                             <input type="test" class="form-control" id="edit-name" readonly placeholder="任务名称">
                         </div>
                         <div class="form-group">
-                            <label for="edit-command">任务名称</label>
+                            <label for="edit-command">shell命令</label>
                             <input type="test" class="form-control" id="edit-command" placeholder="shell命令">
                         </div>
                         <div class="form-group">
-                            <label for="edit-cronExpr">任务名称</label>
+                            <label for="edit-cronExpr">cron表达式</label>
                             <input type="test" class="form-control" id="edit-cronExpr" placeholder="cron表达式">
                         </div>
                     </form>
@@ -102,6 +103,33 @@
                             <th>实际调度时间</th>
                             <th>开始执行时间</th>
                             <th>执行结束时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!--健康节点模态框-->
+    <div id="worker-modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">健康节点</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="worker-list" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>节点IP</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -220,13 +248,34 @@
             $('#log-modal').modal('show')
         })
 
-        $('#new-job').on("click", function (){
+        $('#new-job').on("click", function() {
             console.log("new job")
             $('#edit-name').val("")
             $('#edit-command').val("")
             $('#edit-cronExpr').val("")
             $("#edit-name").attr("readOnly",false)
             $('#edit-modal').modal("show")
+        })
+
+        $('#list-worker').on("click", function() {
+            $('#worker-list tbody').empty()
+            $.ajax({
+                url: '/worker/list',
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.errno != 0) {
+                        return
+                    }
+                    for (var dataKey in resp.data) {
+                        var workerIP = resp.data[dataKey]
+                        // console.log(job, dataKey)
+                        var tr = $("<tr>")
+                        tr.append($('<td>').html(workerIP))
+                        $("#worker-list tbody").append(tr)
+                    }
+                }
+            })
+            $('#worker-modal').modal('show')
         })
 
         // 2.定义一个函数，用于刷新job列表
