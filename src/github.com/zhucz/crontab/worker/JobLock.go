@@ -8,20 +8,20 @@ import (
 
 // JobLock 分布式锁
 type JobLock struct {
-	kv clientv3.KV
+	kv    clientv3.KV
 	lease clientv3.Lease
 
-	jobName string // 任务名
-	leaseID clientv3.LeaseID
+	jobName    string // 任务名
+	leaseID    clientv3.LeaseID
 	cancelFunc context.CancelFunc // 用于终止续租
-	isLocked bool
+	isLocked   bool
 }
 
 // InitJobLock 初始化一把锁
-func InitJobLock(jobName string, kv clientv3.KV, lease clientv3.Lease) (jobLock *JobLock){
+func InitJobLock(jobName string, kv clientv3.KV, lease clientv3.Lease) (jobLock *JobLock) {
 	jobLock = &JobLock{
-		kv: kv,
-		lease: lease,
+		kv:      kv,
+		lease:   lease,
 		jobName: jobName,
 	}
 	return
@@ -31,15 +31,15 @@ func InitJobLock(jobName string, kv clientv3.KV, lease clientv3.Lease) (jobLock 
 func (jobLock *JobLock) TryLock() (err error) {
 
 	var (
-		leaseGrantResp *clientv3.LeaseGrantResponse
-		cancelCtx context.Context
-		cancelFunc context.CancelFunc
-		leaseID clientv3.LeaseID
+		leaseGrantResp    *clientv3.LeaseGrantResponse
+		cancelCtx         context.Context
+		cancelFunc        context.CancelFunc
+		leaseID           clientv3.LeaseID
 		keepAliveRespChan <-chan *clientv3.LeaseKeepAliveResponse
-		keepAliveResp *clientv3.LeaseKeepAliveResponse
-		txnResp *clientv3.TxnResponse
-		txn clientv3.Txn
-		lockKey string
+		keepAliveResp     *clientv3.LeaseKeepAliveResponse
+		txnResp           *clientv3.TxnResponse
+		txn               clientv3.Txn
+		lockKey           string
 	)
 
 	// 1. 创建租约，节点宕机，租约到期自动释放
@@ -60,13 +60,13 @@ func (jobLock *JobLock) TryLock() (err error) {
 	go func() {
 		for {
 			select {
-			case  keepAliveResp = <-keepAliveRespChan: // 自动续租应答
-				if keepAliveResp == nil {  // 说明自动续租被取消掉
+			case keepAliveResp = <-keepAliveRespChan: // 自动续租应答
+				if keepAliveResp == nil { // 说明自动续租被取消掉
 					goto END
 				}
 			}
 		}
-		END:
+	END:
 	}()
 
 	// 4. 创建事务txn

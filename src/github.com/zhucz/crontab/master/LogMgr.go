@@ -9,7 +9,7 @@ import (
 )
 
 type LogMgr struct {
-	client     *mongo.Client
+	client        *mongo.Client
 	logCollection *mongo.Collection
 }
 
@@ -19,15 +19,15 @@ var (
 
 func InitLogMgr() (err error) {
 	var (
-		client *mongo.Client
-		conTimeout time.Duration
+		client       *mongo.Client
+		conTimeout   time.Duration
 		clientOption *options.ClientOptions
 	)
 
 	// 建立mongodb连接
 	conTimeout = time.Duration(G_config.MongodbConnectTimeout) * time.Millisecond
 	clientOption = &options.ClientOptions{
-		Hosts: []string{G_config.MongodbUri},
+		Hosts:          []string{G_config.MongodbUri},
 		ConnectTimeout: &conTimeout,
 	}
 	if client, err = mongo.Connect(context.TODO(), clientOption); err != nil {
@@ -35,7 +35,7 @@ func InitLogMgr() (err error) {
 	}
 
 	G_logMgr = &LogMgr{
-		client: client,
+		client:        client,
 		logCollection: client.Database("cron").Collection("log"),
 	}
 	return
@@ -43,10 +43,10 @@ func InitLogMgr() (err error) {
 
 func (logMgr *LogMgr) ListLog(name string, skip int64, limit int64) (logArr []*common.JobLog, err error) {
 	var (
-		filter *common.JobLogFilter
+		filter  *common.JobLogFilter
 		logSort *common.SortLogByStartTime
-		cursor *mongo.Cursor
-		jobLog *common.JobLog
+		cursor  *mongo.Cursor
+		jobLog  *common.JobLog
 	)
 	logArr = make([]*common.JobLog, 0)
 	filter = &common.JobLogFilter{

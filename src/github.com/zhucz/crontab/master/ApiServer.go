@@ -56,11 +56,11 @@ ERR:
 }
 
 // POST /job/get/ name=job1
-func handleJobGet(resp http.ResponseWriter, req *http.Request)  {
+func handleJobGet(resp http.ResponseWriter, req *http.Request) {
 	var (
-		err error
-		name string
-		job *common.Job
+		err    error
+		name   string
+		job    *common.Job
 		result []byte
 	)
 	if err = req.ParseForm(); err != nil {
@@ -83,8 +83,8 @@ ERR:
 // POST /job/delete/ name=job1
 func handleJobDelete(resp http.ResponseWriter, req *http.Request) {
 	var (
-		err error
-		name string
+		err    error
+		name   string
 		oldJob *common.Job
 		result []byte
 	)
@@ -108,8 +108,8 @@ ERR:
 func handleJobList(resp http.ResponseWriter, req *http.Request) {
 	var (
 		jobList map[string]common.Job
-		err error
-		result []byte
+		err     error
+		result  []byte
 	)
 	if jobList, err = G_jobMgr.ListJobs(); err != nil {
 		goto ERR
@@ -127,10 +127,10 @@ ERR:
 }
 
 // POST /job/kill name=job1
-func handleJobKill(resp http.ResponseWriter, req *http.Request)  {
+func handleJobKill(resp http.ResponseWriter, req *http.Request) {
 	var (
-		name string
-		err error
+		name   string
+		err    error
 		result []byte
 	)
 	if err = req.ParseForm(); err != nil {
@@ -150,21 +150,22 @@ ERR:
 		resp.Write(result)
 	}
 }
+
 // GET job/log?name=xxx&skip=1&limit=1
 func handleJobLog(resp http.ResponseWriter, req *http.Request) {
 	var (
-		err error
+		err    error
 		result []byte
-		name string
-		skip int
-		limit int
+		name   string
+		skip   int
+		limit  int
 		logArr []*common.JobLog
 	)
 	if err = req.ParseForm(); err != nil {
 		goto ERR
 	}
 	name = req.Form.Get("name")
-	if skip, err  = strconv.Atoi(req.Form.Get("skip")); err != nil {
+	if skip, err = strconv.Atoi(req.Form.Get("skip")); err != nil {
 		skip = 0
 	}
 	if limit, err = strconv.Atoi(req.Form.Get("limit")); err != nil {
@@ -185,11 +186,11 @@ ERR:
 }
 
 // 获取健康worker节点列表
-func handleWorkerList(resp http.ResponseWriter, res *http.Request)  {
+func handleWorkerList(resp http.ResponseWriter, res *http.Request) {
 	var (
 		workerArr []string
-		err error
-		result []byte
+		err       error
+		result    []byte
 	)
 	if workerArr, err = G_workerMgr.ListWorkers(); err != nil {
 		goto ERR
@@ -208,10 +209,10 @@ ERR:
 func InitApiServer() (err error) {
 	// 配置路由
 	var (
-		mux *http.ServeMux
-		listen net.Listener
-		server *http.Server
-		staticDir http.Dir
+		mux          *http.ServeMux
+		listen       net.Listener
+		server       *http.Server
+		staticDir    http.Dir
 		staticHandle http.Handler
 	)
 	mux = http.NewServeMux()

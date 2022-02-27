@@ -8,7 +8,6 @@ import (
 )
 
 type Executor struct {
-
 }
 
 var (
@@ -18,7 +17,7 @@ var (
 func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 	go func() {
 		var (
-			err error
+			err    error
 			output []byte
 		)
 		// 初始化锁
@@ -33,7 +32,7 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 
 		result := &common.JobExecuteResult{
 			ExecuteInfo: info,
-			StartTime: startTime,
+			StartTime:   startTime,
 		}
 		if err != nil {
 			result.Err = err

@@ -11,8 +11,8 @@ import (
 // Register 注册节点到etcd cron/worker/{IP}
 type Register struct {
 	client *clientv3.Client
-	kv clientv3.KV
-	lease clientv3.Lease
+	kv     clientv3.KV
+	lease  clientv3.Lease
 
 	localIP string // 本机IP
 }
@@ -42,10 +42,10 @@ func getLocalIP() (ipv4 string, err error) {
 
 func InitRegister() (err error) {
 	var (
-		config clientv3.Config
-		client *clientv3.Client
-		kv     clientv3.KV
-		lease  clientv3.Lease
+		config  clientv3.Config
+		client  *clientv3.Client
+		kv      clientv3.KV
+		lease   clientv3.Lease
 		localIP string
 	)
 
@@ -64,9 +64,9 @@ func InitRegister() (err error) {
 		return
 	}
 	G_register = &Register{
-		client: client,
-		kv: kv,
-		lease: lease,
+		client:  client,
+		kv:      kv,
+		lease:   lease,
 		localIP: localIP,
 	}
 	go G_register.keepOnline()
@@ -74,15 +74,15 @@ func InitRegister() (err error) {
 }
 
 // 注册到/cron/worker/{IP} 并自动续租
-func (register *Register) keepOnline()  {
+func (register *Register) keepOnline() {
 	var (
-		regKey string
-		err error
+		regKey         string
+		err            error
 		leaseGrantResp *clientv3.LeaseGrantResponse
-		keepAliveChan <- chan *clientv3.LeaseKeepAliveResponse
-		keepAliveResp *clientv3.LeaseKeepAliveResponse
-		cancelTxn context.Context
-		cancelFunc context.CancelFunc
+		keepAliveChan  <-chan *clientv3.LeaseKeepAliveResponse
+		keepAliveResp  *clientv3.LeaseKeepAliveResponse
+		cancelTxn      context.Context
+		cancelFunc     context.CancelFunc
 	)
 	// 注册路径
 	regKey = common.JobWorkerDir + register.localIP
@@ -106,7 +106,7 @@ func (register *Register) keepOnline()  {
 
 		for {
 			select {
-			case keepAliveResp = <- keepAliveChan:
+			case keepAliveResp = <-keepAliveChan:
 				if keepAliveResp == nil {
 					// 续租失败
 					goto RETRY
@@ -114,13 +114,10 @@ func (register *Register) keepOnline()  {
 			}
 		}
 
-		RETRY:
-			time.Sleep(1 * time.Second)
-			if cancelFunc != nil {
-				cancelFunc()
-			}
+	RETRY:
+		time.Sleep(1 * time.Second)
+		if cancelFunc != nil {
+			cancelFunc()
+		}
 	}
 }
-
-
-

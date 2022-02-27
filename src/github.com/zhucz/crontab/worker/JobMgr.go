@@ -14,18 +14,18 @@ var (
 
 // JobMgr 任务管理器
 type JobMgr struct {
-	client *clientv3.Client
-	kv     clientv3.KV
-	lease  clientv3.Lease
+	client  *clientv3.Client
+	kv      clientv3.KV
+	lease   clientv3.Lease
 	watcher clientv3.Watcher
 }
 
 func InitJobMgr() (err error) {
 	var (
-		config clientv3.Config
-		client *clientv3.Client
-		kv     clientv3.KV
-		lease  clientv3.Lease
+		config  clientv3.Config
+		client  *clientv3.Client
+		kv      clientv3.KV
+		lease   clientv3.Lease
 		watcher clientv3.Watcher
 	)
 
@@ -43,9 +43,9 @@ func InitJobMgr() (err error) {
 	watcher = clientv3.NewWatcher(client)
 
 	G_jobMgr = &JobMgr{
-		client: client,
-		kv:     kv,
-		lease:  lease,
+		client:  client,
+		kv:      kv,
+		lease:   lease,
 		watcher: watcher,
 	}
 
@@ -58,14 +58,14 @@ func InitJobMgr() (err error) {
 
 func (jobMgr *JobMgr) watchJobs() (err error) {
 	var (
-		getResp *clientv3.GetResponse
-		kvPair *mvccpb.KeyValue
-		job *common.Job
+		getResp            *clientv3.GetResponse
+		kvPair             *mvccpb.KeyValue
+		job                *common.Job
 		watchStartRevision int64
-		watchChan clientv3.WatchChan
-		watchResp clientv3.WatchResponse
-		watchEvent *clientv3.Event
-		jobEvent *common.JobEvent
+		watchChan          clientv3.WatchChan
+		watchResp          clientv3.WatchResponse
+		watchEvent         *clientv3.Event
+		jobEvent           *common.JobEvent
 	)
 	// 1. get到/cron/jobs/目录下的所有任务，并且获知当前键值对的revision
 	if getResp, err = jobMgr.kv.Get(context.TODO(), common.JobSaveDir, clientv3.WithPrefix()); err != nil {
@@ -87,7 +87,7 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 		// 从get时刻的后续版本开始监听
 		watchStartRevision = getResp.Header.Revision + 1
 		// 启动监听/cron/jobs/目录的后续变化
-		watchChan = jobMgr.watcher.Watch(context.TODO(),common.JobSaveDir,clientv3.WithRev(watchStartRevision), clientv3.WithPrefix())
+		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JobSaveDir, clientv3.WithRev(watchStartRevision), clientv3.WithPrefix())
 		for watchResp = range watchChan {
 			// 每个watchResp有可能包含多个Event
 			for _, watchEvent = range watchResp.Events {
@@ -103,7 +103,7 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 					// delete /cron/jobs/job10, 需要得到job10
 					jobName := common.ExtractJobName(string(watchEvent.Kv.Key))
 					//构造一个Event事件
-					jobEvent = common.BuildJobEvent(common.JobEventDelete, &common.Job{Name:jobName})
+					jobEvent = common.BuildJobEvent(common.JobEventDelete, &common.Job{Name: jobName})
 				}
 				// 把变化推送给scheduler
 				GScheduler.PushJobEvent(jobEvent)
@@ -115,15 +115,15 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 	return nil
 }
 
-func (jobMgr *JobMgr) watchKiller()  {
+func (jobMgr *JobMgr) watchKiller() {
 	var (
-		watchChan clientv3.WatchChan
-		watchResp clientv3.WatchResponse
+		watchChan  clientv3.WatchChan
+		watchResp  clientv3.WatchResponse
 		watchEvent *clientv3.Event
 	)
 	// 监听/cron/killer/
 	go func() { // 监听协程
-		watchChan = jobMgr.watcher.Watch(context.TODO(),common.JobKillerDir, clientv3.WithPrefix())
+		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JobKillerDir, clientv3.WithPrefix())
 		for watchResp = range watchChan {
 			// 每个watchResp有可能包含多个Event
 			for _, watchEvent = range watchResp.Events {

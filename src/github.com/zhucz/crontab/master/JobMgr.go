@@ -99,9 +99,9 @@ func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 
 func (jobMgr *JobMgr) GetJob(name string) (job *common.Job, err error) {
 	var (
-		jobKey    string
-		getResp   *clientv3.GetResponse
-		jobObj common.Job
+		jobKey  string
+		getResp *clientv3.GetResponse
+		jobObj  common.Job
 	)
 	jobKey = common.JobSaveDir + name
 	fmt.Println(jobKey)
@@ -122,9 +122,9 @@ func (jobMgr *JobMgr) GetJob(name string) (job *common.Job, err error) {
 
 func (jobMgr *JobMgr) ListJobs() (jobList map[string]common.Job, err error) {
 	var (
-		jobKey string
+		jobKey  string
 		getResp *clientv3.GetResponse
-		job common.Job
+		job     common.Job
 	)
 	jobKey = common.JobSaveDir
 
@@ -148,9 +148,9 @@ func (jobMgr *JobMgr) ListJobs() (jobList map[string]common.Job, err error) {
 
 func (jobMgr *JobMgr) KillJob(name string) (err error) {
 	var (
-		killerJob string
+		killerJob      string
 		leaseGrantResp *clientv3.LeaseGrantResponse
-		leaseId clientv3.LeaseID
+		leaseId        clientv3.LeaseID
 	)
 	killerJob = common.JobKillerDir + name
 	if leaseGrantResp, err = jobMgr.lease.Grant(context.TODO(), 1); err != nil {

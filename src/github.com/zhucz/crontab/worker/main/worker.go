@@ -17,7 +17,7 @@ func initEnv() {
 }
 
 // 解析命令行参数
-func initArgs()  {
+func initArgs() {
 	// 启动命令 worker -config ./worker.json
 	flag.StringVar(&confFile, "config", "./worker.json", "指定worker.json")
 	flag.Parse()
@@ -59,8 +59,8 @@ func main() {
 		goto ERR
 	}
 
-
-	for {}
+	for {
+	}
 
 	return
 

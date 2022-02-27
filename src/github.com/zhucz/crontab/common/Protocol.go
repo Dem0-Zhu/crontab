@@ -24,45 +24,45 @@ type Response struct {
 // JobEvent 变化事件
 type JobEvent struct {
 	EventType int
-	Job *Job
+	Job       *Job
 }
 
 // JobSchedulePlan 调度计划
 type JobSchedulePlan struct {
-	Job *Job // 调度的任务信息
-	Expr *cronexpr.Expression // 解析好的任务表达式
-	NextTime time.Time // 下次调度时间
+	Job      *Job                 // 调度的任务信息
+	Expr     *cronexpr.Expression // 解析好的任务表达式
+	NextTime time.Time            // 下次调度时间
 
 }
 
 // JobExecuteInfo 任务执行状态
 type JobExecuteInfo struct {
-	Job *Job
-	PlanTime time.Time // 理论上的调度时间
-	RealTime time.Time // 实际上的调度时间
-	CancelCtx context.Context // 任务command的context
+	Job        *Job
+	PlanTime   time.Time          // 理论上的调度时间
+	RealTime   time.Time          // 实际上的调度时间
+	CancelCtx  context.Context    // 任务command的context
 	CancelFunc context.CancelFunc // 用于取消command执行的cancel函数
 }
 
 // JobExecuteResult 任务执行结果
 type JobExecuteResult struct {
 	ExecuteInfo *JobExecuteInfo
-	Output []byte
-	Err error
-	StartTime time.Time
-	EndTime time.Time
+	Output      []byte
+	Err         error
+	StartTime   time.Time
+	EndTime     time.Time
 }
 
 // JobLog 任务执行日志
 type JobLog struct {
-	JobName string `json:"job_name" bson:"job_name"`
-	Command string `json:"command" bson:"command"`
-	Err string `json:"err" bson:"err"`
-	Output string `json:"output" bson:"output"`
-	PlanTime int64 `json:"plan_time" bson:"plan_time"` // 计划开始时间
-	ScheduleTime int64 `json:"schedule_time" bson:"schedule_time"` // 实际调度时间
-	StartTime int64 `json:"start_time" bson:"start_time"` // 任务执行开始时间
-	EndTime int64 `json:"end_time" bson:"end_time"` // 任务执行结束时间
+	JobName      string `json:"job_name" bson:"job_name"`
+	Command      string `json:"command" bson:"command"`
+	Err          string `json:"err" bson:"err"`
+	Output       string `json:"output" bson:"output"`
+	PlanTime     int64  `json:"plan_time" bson:"plan_time"`         // 计划开始时间
+	ScheduleTime int64  `json:"schedule_time" bson:"schedule_time"` // 实际调度时间
+	StartTime    int64  `json:"start_time" bson:"start_time"`       // 任务执行开始时间
+	EndTime      int64  `json:"end_time" bson:"end_time"`           // 任务执行结束时间
 }
 
 // LogBatch 日志批次
@@ -115,7 +115,7 @@ func ExtractKillerName(killerKey string) string {
 func BuildJobEvent(eventType int, job *Job) *JobEvent {
 	return &JobEvent{
 		EventType: eventType,
-		Job: job,
+		Job:       job,
 	}
 }
 
@@ -130,8 +130,8 @@ func BuildJobSchedulePlan(job *Job) (jobSchedulePlan *JobSchedulePlan, err error
 	}
 	// 生成调度计划
 	jobSchedulePlan = &JobSchedulePlan{
-		Job: job,
-		Expr: expr,
+		Job:      job,
+		Expr:     expr,
 		NextTime: expr.Next(time.Now()),
 	}
 	return
@@ -140,7 +140,7 @@ func BuildJobSchedulePlan(job *Job) (jobSchedulePlan *JobSchedulePlan, err error
 // BuildJobExecuteInfo 构造执行状态信息
 func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobExecuteInfo) {
 	jobExecuteInfo = &JobExecuteInfo{
-		Job: jobSchedulePlan.Job,
+		Job:      jobSchedulePlan.Job,
 		PlanTime: jobSchedulePlan.NextTime,
 		RealTime: time.Now(),
 	}

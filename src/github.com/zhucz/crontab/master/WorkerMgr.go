@@ -10,8 +10,8 @@ import (
 // WorkerMgr 复制获取/cron/worker/下的kv
 type WorkerMgr struct {
 	client *clientv3.Client
-	kv clientv3.KV
-	lease clientv3.Lease
+	kv     clientv3.KV
+	lease  clientv3.Lease
 }
 
 var G_workerMgr *WorkerMgr
@@ -20,7 +20,6 @@ var G_workerMgr *WorkerMgr
 func (workerMgr *WorkerMgr) ListWorkers() (workerArr []string, err error) {
 	var (
 		getResp *clientv3.GetResponse
-
 	)
 	workerArr = make([]string, 0)
 	if getResp, err = workerMgr.kv.Get(context.TODO(), common.JobWorkerDir, clientv3.WithPrefix()); err != nil {
@@ -59,8 +58,8 @@ func InitWorkerMgr() (err error) {
 
 	G_workerMgr = &WorkerMgr{
 		client: client,
-		kv: kv,
-		lease: lease,
+		kv:     kv,
+		lease:  lease,
 	}
 	return
 }

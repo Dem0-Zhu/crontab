@@ -13,14 +13,14 @@ var (
 )
 
 type Config struct {
-	ApiPort         int      `json:"api_port"`
-	ApiReadTimeout  int      `json:"api_read_timeout"`
-	ApiWriteTimeout int      `json:"api_write_timeout"`
-	EtcdHosts       []string `json:"etcd_hosts"`
-	EtcdDialTimeout int      `json:"etcd_dial_timeout"`
-	WebRoot         string   `json:"webroot"`
-	MongodbUri string `json:"mongodb_uri"`
-	MongodbConnectTimeout int `json:"mongodb_connect_timeout"`
+	ApiPort               int      `json:"api_port"`
+	ApiReadTimeout        int      `json:"api_read_timeout"`
+	ApiWriteTimeout       int      `json:"api_write_timeout"`
+	EtcdHosts             []string `json:"etcd_hosts"`
+	EtcdDialTimeout       int      `json:"etcd_dial_timeout"`
+	WebRoot               string   `json:"webroot"`
+	MongodbUri            string   `json:"mongodb_uri"`
+	MongodbConnectTimeout int      `json:"mongodb_connect_timeout"`
 }
 
 func InitConfig(fileName string) (err error) {

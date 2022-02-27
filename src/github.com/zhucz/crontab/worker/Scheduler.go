@@ -8,10 +8,10 @@ import (
 
 // Scheduler 任务调度, 不停地循环检查任务是否到期
 type Scheduler struct {
-	jobEventChan chan *common.JobEvent              // etcd任务事件队列
-	jobPlanTable map[string]*common.JobSchedulePlan // 任务调度计划表：任务名称 --》 调度计划
-	jobExecutingTable map[string]*common.JobExecuteInfo // 正在执行的任务
-	jobResultChan chan *common.JobExecuteResult // 保存任务执行完成的结果
+	jobEventChan      chan *common.JobEvent              // etcd任务事件队列
+	jobPlanTable      map[string]*common.JobSchedulePlan // 任务调度计划表：任务名称 --》 调度计划
+	jobExecutingTable map[string]*common.JobExecuteInfo  // 正在执行的任务
+	jobResultChan     chan *common.JobExecuteResult      // 保存任务执行完成的结果
 }
 
 var (
@@ -52,26 +52,26 @@ func (scheduler *Scheduler) HandleJobResult(jobResult *common.JobExecuteResult) 
 	// 生成执行日志
 	if jobResult.Err != common.ErrLockAlreadyRequired {
 		jobLog := &common.JobLog{
-			JobName: jobResult.ExecuteInfo.Job.Name,
-			Command: jobResult.ExecuteInfo.Job.Command,
-			Output: string(jobResult.Output),
-			PlanTime: jobResult.ExecuteInfo.PlanTime.UnixNano() / 1000 / 1000, // 毫秒
+			JobName:      jobResult.ExecuteInfo.Job.Name,
+			Command:      jobResult.ExecuteInfo.Job.Command,
+			Output:       string(jobResult.Output),
+			PlanTime:     jobResult.ExecuteInfo.PlanTime.UnixNano() / 1000 / 1000, // 毫秒
 			ScheduleTime: jobResult.ExecuteInfo.RealTime.UnixNano() / 1000 / 1000,
-			StartTime: jobResult.StartTime.UnixNano() / 1000 / 1000,
-			EndTime: jobResult.EndTime.UnixNano() / 1000 / 1000,
+			StartTime:    jobResult.StartTime.UnixNano() / 1000 / 1000,
+			EndTime:      jobResult.EndTime.UnixNano() / 1000 / 1000,
 		}
 		if jobResult.Err != nil {
 			jobLog.Err = jobResult.Err.Error()
 		} else {
 			jobLog.Err = ""
 		}
-	GLogsink.Append(jobLog)
+		GLogsink.Append(jobLog)
 
 	}
 	fmt.Println("任务执行完成：", jobResult.ExecuteInfo.Job.Name, string(jobResult.Output), jobResult.StartTime, jobResult.EndTime, jobResult.Err)
 }
 
-func (scheduler *Scheduler)TryStartJob(jobSchedulePlan *common.JobSchedulePlan)  {
+func (scheduler *Scheduler) TryStartJob(jobSchedulePlan *common.JobSchedulePlan) {
 	// 假如任务每一秒钟被调度一次，但会执行1分钟，所以一分钟会被调度60次，这里保证正在运行的任务只会被调度一次
 	if _, ok := scheduler.jobExecutingTable[jobSchedulePlan.Job.Name]; ok {
 		// 任务已经被调度
@@ -149,16 +149,16 @@ func (scheduler *Scheduler) PushJobEvent(jobEvent *common.JobEvent) {
 
 func InitScheduler() (err error) {
 	GScheduler = &Scheduler{
-		jobEventChan: make(chan *common.JobEvent, 1000), // 1000的容量
-		jobPlanTable: make(map[string]*common.JobSchedulePlan),
+		jobEventChan:      make(chan *common.JobEvent, 1000), // 1000的容量
+		jobPlanTable:      make(map[string]*common.JobSchedulePlan),
 		jobExecutingTable: make(map[string]*common.JobExecuteInfo),
-		jobResultChan: make(chan *common.JobExecuteResult, 1000),
+		jobResultChan:     make(chan *common.JobExecuteResult, 1000),
 	}
 
 	go GScheduler.schedulerLoop()
 	return
 }
 
-func (scheduler *Scheduler) PushJobResult(result *common.JobExecuteResult)  {
+func (scheduler *Scheduler) PushJobResult(result *common.JobExecuteResult) {
 	GScheduler.jobResultChan <- result
 }

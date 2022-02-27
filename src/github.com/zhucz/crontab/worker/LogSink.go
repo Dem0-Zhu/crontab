@@ -11,9 +11,9 @@ import (
 
 // LogSink mongodb存储日志
 type LogSink struct {
-	client     *mongo.Client
-	logCollection *mongo.Collection
-	logChan chan *common.JobLog
+	client         *mongo.Client
+	logCollection  *mongo.Collection
+	logChan        chan *common.JobLog
 	autoCommitChan chan *common.LogBatch
 }
 
@@ -22,7 +22,7 @@ var (
 )
 
 // 批量写入日志
-func (logSink *LogSink) saveLogs(batch *common.LogBatch)  {
+func (logSink *LogSink) saveLogs(batch *common.LogBatch) {
 	if _, err := logSink.logCollection.InsertMany(context.TODO(), batch.Logs); err != nil {
 		fmt.Println("日志写入失败", err)
 	}
@@ -32,20 +32,20 @@ func (logSink *LogSink) saveLogs(batch *common.LogBatch)  {
 func (logSink *LogSink) writeLoop() {
 	var (
 		// 按批次写入mongo
-		logs *common.LogBatch
+		logs        *common.LogBatch
 		commitTimer *time.Timer
 	)
 	for {
 		select {
-		case log := <- GLogsink.logChan:
+		case log := <-GLogsink.logChan:
 			if logs == nil {
 				logs = &common.LogBatch{}
 				commitTimer = time.AfterFunc(time.Duration(G_config.JobLogCommitTimeout)*time.Millisecond, func(logBatch *common.LogBatch) func() {
-						return func() {
-							// 发送超时通知，不直接提交batch
-							logSink.autoCommitChan <- logBatch
-						}
-					}(logs),
+					return func() {
+						// 发送超时通知，不直接提交batch
+						logSink.autoCommitChan <- logBatch
+					}
+				}(logs),
 				)
 			}
 			logs.Logs = append(logs.Logs, log)
@@ -77,13 +77,13 @@ func (logSink *LogSink) Append(jobLog *common.JobLog) {
 
 func InitLogSink() (err error) {
 	var (
-		client *mongo.Client
+		client       *mongo.Client
 		clientOption *options.ClientOptions
-		conTimeout time.Duration
+		conTimeout   time.Duration
 	)
 	conTimeout = time.Duration(G_config.MongodbConnectTimeout) * time.Millisecond
 	clientOption = &options.ClientOptions{
-		Hosts: []string{G_config.MongodbUri},
+		Hosts:          []string{G_config.MongodbUri},
 		ConnectTimeout: &conTimeout,
 	}
 	if client, err = mongo.Connect(context.TODO(), clientOption); err != nil {
@@ -91,9 +91,9 @@ func InitLogSink() (err error) {
 	}
 
 	GLogsink = &LogSink{
-		client: client,
-		logCollection: client.Database("cron").Collection("log"),
-		logChan: make(chan *common.JobLog, 1000),
+		client:         client,
+		logCollection:  client.Database("cron").Collection("log"),
+		logChan:        make(chan *common.JobLog, 1000),
 		autoCommitChan: make(chan *common.LogBatch, 1000),
 	}
 
