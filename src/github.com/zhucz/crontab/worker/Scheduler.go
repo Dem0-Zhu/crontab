@@ -73,6 +73,7 @@ func (scheduler *Scheduler) HandleJobResult(jobResult *common.JobExecuteResult) 
 
 func (scheduler *Scheduler) TryStartJob(jobSchedulePlan *common.JobSchedulePlan) {
 	// 假如任务每一秒钟被调度一次，但会执行1分钟，所以一分钟会被调度60次，这里保证正在运行的任务只会被调度一次
+	// 保存任务调度表
 	if _, ok := scheduler.jobExecutingTable[jobSchedulePlan.Job.Name]; ok {
 		// 任务已经被调度
 		return
